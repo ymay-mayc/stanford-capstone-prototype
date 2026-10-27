@@ -11,7 +11,11 @@ export function QuickViewModal() {
     closeQuickView,
     sessionById,
     isOnAgenda,
+    isDraftActive,
+    isInDraft,
+    isLocked,
     toggleAgenda,
+    toggleLock,
     openDetail,
     setQuickViewOccurrence,
   } = useAgenda();
@@ -38,6 +42,9 @@ export function QuickViewModal() {
   const session = sessionById(quickViewId);
   const selected = findOccurrence(quickViewOccurrenceId)?.occurrence ?? session.occurrences[0];
   const onAgenda = isOnAgenda(selected.id);
+  const draftActive = isDraftActive();
+  const inDraft = isInDraft(selected.id);
+  const locked = isLocked(selected.id);
   const showRecommended = session.recommended && !onAgenda;
   const reserved = session.addLabel.toLowerCase().includes("reserve");
 
@@ -137,6 +144,32 @@ export function QuickViewModal() {
             {session.forced ? (
               <button type="button" className="sf-cta sf-cta--hero sf-cta--unavailable" disabled>
                 Added for you
+              </button>
+            ) : draftActive && locked ? (
+              <button
+                type="button"
+                className="sf-cta sf-cta--hero sf-cta--secondary"
+                onClick={() => toggleLock(selected.id)}
+              >
+                <i className="icon icon--lock" aria-hidden="true" />
+                Unlock
+              </button>
+            ) : draftActive && inDraft ? (
+              <button
+                type="button"
+                className="sf-cta sf-cta--hero sf-cta--secondary"
+                onClick={() => toggleAgenda(selected.id)}
+              >
+                Remove from proposal
+              </button>
+            ) : draftActive ? (
+              <button
+                type="button"
+                className="sf-cta sf-cta--hero sf-cta--primary"
+                onClick={() => toggleAgenda(selected.id)}
+              >
+                <i className="icon icon--add" aria-hidden="true" />
+                Add to proposal
               </button>
             ) : onAgenda ? (
               <button

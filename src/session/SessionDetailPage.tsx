@@ -8,7 +8,11 @@ export function SessionDetailPage({ sessionId }: { sessionId: string }) {
     sessions,
     isOnAgenda,
     isSaved,
+    isDraftActive,
+    isInDraft,
+    isLocked,
     toggleAgenda,
+    toggleLock,
     toggleSaved,
     overlapsFor,
     openAgenda,
@@ -16,6 +20,9 @@ export function SessionDetailPage({ sessionId }: { sessionId: string }) {
   } = useAgenda();
   const session = sessionById(sessionId);
   const onAgenda = isOnAgenda(session.id);
+  const draftActive = isDraftActive();
+  const inDraft = isInDraft(session.id);
+  const locked = isLocked(session.id);
   const saved = isSaved(session.id);
   const overlaps = overlapsFor(session.id);
   const related = sessions.filter(
@@ -37,6 +44,24 @@ export function SessionDetailPage({ sessionId }: { sessionId: string }) {
           {session.forced ? (
             <button type="button" className="sf-cta sf-cta--hero sf-cta--unavailable" disabled>
               Added for you
+            </button>
+          ) : draftActive && locked ? (
+            <button
+              type="button"
+              className="sf-cta sf-cta--hero sf-cta--secondary"
+              onClick={() => toggleLock(session.id)}
+            >
+              <i className="icon icon--lock" aria-hidden="true" />
+              Unlock
+            </button>
+          ) : draftActive ? (
+            <button
+              type="button"
+              className={inDraft ? "sf-cta sf-cta--hero sf-cta--secondary" : "sf-cta sf-cta--hero sf-cta--primary"}
+              onClick={() => toggleAgenda(session.id)}
+            >
+              <i className={inDraft ? "icon icon--check" : "icon icon--add"} aria-hidden="true" />
+              {inDraft ? "Remove from proposal" : "Add to proposal"}
             </button>
           ) : (
             <button

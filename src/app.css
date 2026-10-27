@@ -243,6 +243,115 @@
   letter-spacing: var(--font-style-body-copy-2-letter-spacing);
 }
 
+.agenda__variant-note {
+  margin-top: var(--space-content-xs);
+  color: var(--color-on-surface-3);
+  font-family: var(--font-style-body-copy-3-family);
+  font-size: var(--font-style-body-copy-3-size);
+  line-height: var(--font-style-body-copy-3-line-height);
+}
+
+.variant-b {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-content-md);
+  width: 100%;
+  margin-top: var(--space-content-lg);
+}
+
+.variant-b__card {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-content-sm);
+  margin: 0;
+  padding: var(--space-content-lg);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-1);
+  border-radius: var(--radius-card);
+  text-align: left;
+}
+
+.agenda__intro .variant-b__card h2 {
+  margin: 0;
+  color: var(--color-link);
+  font-family: var(--font-style-body-copy-2-bold-family);
+  font-size: var(--font-style-body-copy-2-bold-size);
+  font-weight: var(--font-style-body-copy-2-bold-weight);
+  line-height: var(--font-style-body-copy-2-bold-line-height);
+  letter-spacing: var(--font-style-body-copy-2-bold-letter-spacing);
+}
+
+.agenda__intro .variant-b__card p,
+.agenda__intro .variant-b__card li {
+  width: auto;
+  max-width: none;
+  margin: 0;
+  color: var(--color-on-surface-2);
+  font-family: var(--font-style-body-copy-3-family);
+  font-size: var(--font-style-body-copy-3-size);
+  font-weight: var(--font-style-body-copy-3-weight);
+  line-height: var(--font-style-body-copy-3-line-height);
+  letter-spacing: var(--font-style-body-copy-3-letter-spacing);
+  text-align: left;
+}
+
+.variant-b__sessions,
+.variant-b__checks {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-content-xs);
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.variant-b__status {
+  font-weight: var(--font-style-body-copy-3-bold-weight);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.variant-b__updated {
+  font-weight: var(--font-style-body-copy-3-bold-weight);
+}
+
+.variant-b__actions,
+.variant-b__aside {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-content-sm);
+  align-items: center;
+}
+
+.variant-b__prefs {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-content-sm);
+}
+
+.variant-b__prefs fieldset {
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+
+.variant-b__prefs legend {
+  margin-bottom: var(--space-content-xs);
+  color: var(--color-on-surface-1);
+  font-family: var(--font-style-body-copy-3-bold-family);
+  font-size: var(--font-style-body-copy-3-bold-size);
+  font-weight: var(--font-style-body-copy-3-bold-weight);
+}
+
+.variant-b__prefs label {
+  display: flex;
+  gap: var(--space-content-xs);
+  align-items: center;
+  margin-top: var(--space-content-xs);
+}
+
 /* No Agentforce chat-input token exists. Panel uses the neutral chip surface. */
 .agenda-prompt {
   display: flex;
@@ -1824,4 +1933,37 @@
   .sf-footer__legal-links {
     justify-content: center;
   }
+}
+
+/* Existing DMS spacing and type roles; keep review and agenda visible together. */
+.variant-b { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 320px), 1fr)); align-items: start; }
+.variant-b__card { min-width: 0; overflow-wrap: anywhere; padding: var(--space-content-md); }
+.variant-b__actions button:disabled { opacity: .5; cursor: not-allowed; }
+.variant-b summary { cursor: pointer; color: var(--color-link); }
+.variant-b select { color: var(--color-on-surface-2); background: var(--color-surface-1); border: 1px solid var(--color-border-neutral); border-radius: var(--radius-input); padding: var(--space-interactive-xs); }
+.variant-b button:focus-visible, .variant-b select:focus-visible, .variant-b summary:focus-visible { outline: 2px solid var(--color-border-focus); outline-offset: 2px; }
+
+/* Presentation annotation outside the product UI.
+   DMS roles: on-surface-3, surface-1, border-1, Body Copy 4. */
+.prototype-annotation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-content-xs) var(--space-content-md);
+  padding: var(--space-content-sm) var(--space-content-lg);
+  background: var(--color-surface-1);
+  color: var(--color-on-surface-3);
+  border-bottom: 1px dashed var(--color-border-1);
+  font-family: var(--font-style-body-copy-4-family);
+  font-size: var(--font-style-body-copy-4-size);
+  line-height: var(--font-style-body-copy-4-line-height);
+  font-weight: var(--font-style-body-copy-4-weight);
+  text-align: center;
+}
+.prototype-annotation__label { font-style: italic; }
+.prototype-annotation__context {
+  font-size: var(--font-style-body-copy-5-size);
+  text-transform: uppercase;
+  letter-spacing: var(--font-style-body-copy-5-letter-spacing);
 }

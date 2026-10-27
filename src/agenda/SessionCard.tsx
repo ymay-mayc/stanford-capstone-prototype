@@ -12,15 +12,25 @@ export function SessionCard({
   occurrence?: Occurrence;
   variant?: "calendar" | "row";
 }) {
-  const { isOnAgenda, isSurfaced, toggleAgenda, openQuickView } = useAgenda();
+  const { isOnAgenda, isSurfaced, isDraftActive, isInDraft, isLocked, toggleAgenda, openQuickView } =
+    useAgenda();
   const time = occurrence ?? session.occurrences[0];
   const onAgenda = isOnAgenda(time.id);
-  const suggestion = (session.recommended || isSurfaced(time.id)) && !onAgenda;
+  const draftActive = isDraftActive();
+  const inDraft = isInDraft(time.id);
+  const proposed = draftActive && inDraft && !onAgenda;
+  const removing = draftActive && onAgenda && !inDraft && !isLocked(time.id);
+  const suggestion = !proposed && !removing && (session.recommended || isSurfaced(time.id)) && !onAgenda;
   const venue = session.location.split(",")[0]?.trim() ?? session.location;
 
   return (
     <article
-      className={["card", variant === "row" ? "card--row" : "", suggestion ? "card--suggestion" : ""]
+      className={[
+        "card",
+        variant === "row" ? "card--row" : "",
+        suggestion || proposed ? "card--suggestion" : "",
+        removing ? "card--removing" : "",
+      ]
         .filter(Boolean)
         .join(" ")}
     >
@@ -31,6 +41,10 @@ export function SessionCard({
       >
         <span className="card__header">
           <span className="card__type">{session.type}</span>
+          {proposed ? <span className="card__recommended">Draft · not saved</span> : null}
+          {onAgenda && !removing ? <span className="card__recommended">Added</span> : null}
+          {isLocked(time.id) ? <span className="card__recommended">Locked</span> : null}
+          {removing ? <span className="card__recommended">Will be removed</span> : null}
           {suggestion ? (
             <span className="card__recommended">
               <span className="card__sparkle">
@@ -44,7 +58,13 @@ export function SessionCard({
         <span className="card__meta">{formatCardWhen(time, venue)}</span>
       </button>
       <div className="card__tools">
-        {!onAgenda && !session.forced ? (
+        {draftActive && !proposed && !onAgenda && !session.forced ? (
+          <button type="button" className="card__add" onClick={() => toggleAgenda(time.id)}>
+            <i className="icon icon--add" aria-hidden="true" />
+            Add to proposal
+          </button>
+        ) : null}
+        {!draftActive && !onAgenda && !session.forced ? (
           <button
             type="button"
             className="card__add"

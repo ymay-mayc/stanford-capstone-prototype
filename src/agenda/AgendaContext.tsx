@@ -6,7 +6,9 @@ import {
   useState,
   type ReactNode,
 } from "react";
+import { mergeLocked } from "./draftReview";
 import { entriesFor, findOccurrence, rangesOverlap, sessions } from "./sessions";
+import { builtDraftIds, defaultGoals, protectedSessionIds, reviewDraft } from "./variantB";
 import type { AgendaEntry, LayoutMode, Session, SyncTarget, View } from "./types";
 
 type AgendaContextValue = {
@@ -40,6 +42,20 @@ type AgendaContextValue = {
   notify: (message: string) => void;
   surfaceSessions: (occurrenceIds: string[]) => void;
   isSurfaced: (occurrenceId: string) => boolean;
+  isDraftActive: () => boolean;
+  draftOccurrenceIds: () => string[];
+  isInDraft: (occurrenceId: string) => boolean;
+  isLocked: (occurrenceId: string) => boolean;
+  savedOccurrenceIds: () => string[];
+  proposeDraft: (occurrenceIds: string[]) => string[];
+  toggleLock: (occurrenceId: string) => void;
+  discardDraft: () => void;
+  goals: string[];
+  setGoals: (goals: string[]) => void;
+  appliedSummary: string | null;
+  buildDraft: () => void;
+  applyDraft: () => void;
+  undoApply: () => void;
   overlapsFor: (occurrenceId: string) => AgendaEntry[];
   visibleEntries: () => AgendaEntry[];
   sessionById: (sessionId: string) => Session;
@@ -49,7 +65,7 @@ const AgendaContext = createContext<AgendaContextValue | null>(null);
 
 function initialAgenda() {
   return Object.fromEntries(
-    entriesFor(sessions).map(({ occurrence }) => [occurrence.id, occurrence.initialOnAgenda]),
+    entriesFor(sessions).map(({ occurrence }) => [occurrence.id, protectedSessionIds.includes(occurrence.id)]),
   );
 }
 
@@ -60,7 +76,7 @@ function initialSaved() {
 export function AgendaProvider({ children }: { children: ReactNode }) {
   const [view, setView] = useState<View>({ name: "agenda" });
   const [layout, setLayout] = useState<LayoutMode>("calendar");
-  const [showRecommended, setShowRecommended] = useState(true);
+  const [showRecommended, setShowRecommended] = useState(false);
   const [showFavorites, setShowFavorites] = useState(false);
   const [forYouOpen, setForYouOpen] = useState(false);
   const [syncTarget, setSyncTarget] = useState<SyncTarget>(null);
@@ -70,6 +86,12 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
   const [onAgenda, setOnAgenda] = useState<Record<string, boolean>>(initialAgenda);
   const [saved, setSaved] = useState<Record<string, boolean>>(initialSaved);
   const [surfaced, setSurfaced] = useState<Record<string, boolean>>({});
+  const [draftIds, setDraftIds] = useState<string[] | null>(null);
+  const [locked, setLocked] = useState<Record<string, boolean>>({});
+  const [goals, setGoals] = useState<string[]>(defaultGoals);
+  const [appliedSummary, setAppliedSummary] = useState<string | null>(null);
+  const [priorAgenda, setPriorAgenda] = useState<Record<string, boolean> | null>(null);
+  const [lastDraft, setLastDraft] = useState<string[] | null>(null);
 
   useEffect(() => {
     if (!toast) return;
@@ -81,6 +103,18 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
     const isOnAgenda = (occurrenceId: string) => onAgenda[occurrenceId] ?? false;
     const isSaved = (sessionId: string) => saved[sessionId] ?? false;
     const isSurfaced = (occurrenceId: string) => surfaced[occurrenceId] ?? false;
+    const isDraftActive = () => draftIds !== null;
+    const draftOccurrenceIds = () => draftIds ?? [];
+    const isInDraft = (occurrenceId: string) => draftIds?.includes(occurrenceId) ?? false;
+    const isLocked = (occurrenceId: string) => isOnAgenda(occurrenceId) || (locked[occurrenceId] ?? false);
+    const savedOccurrenceIds = () =>
+      Object.entries(onAgenda)
+        .filter(([, on]) => on)
+        .map(([id]) => id);
+    const lockedIds = () => [...new Set([
+      ...savedOccurrenceIds(),
+      ...Object.entries(locked).filter(([, on]) => on).map(([id]) => id),
+    ])];
 
     const overlapsFor = (occurrenceId: string) => {
       const found = findOccurrence(occurrenceId);
@@ -97,6 +131,7 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
         if (showFavorites && isSaved(session.id)) return true;
         if (showRecommended && session.recommended) return true;
         if (isSurfaced(occurrence.id)) return true;
+        if (isInDraft(occurrence.id)) return true;
         return false;
       });
 
@@ -138,6 +173,22 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
       toggleAgenda: (occurrenceId: string) => {
         const found = findOccurrence(occurrenceId);
         if (!found || found.session.forced) return;
+        if (isOnAgenda(occurrenceId)) {
+          setToast("Saved sessions are protected. Recommendations will work around them.");
+          return;
+        }
+        if (draftIds) {
+          if (isLocked(occurrenceId)) {
+            setToast("This session is protected. Your saved agenda will stay unchanged.");
+            return;
+          }
+          const included = draftIds.includes(occurrenceId);
+          setDraftIds(
+            included ? draftIds.filter((id) => id !== occurrenceId) : [...draftIds, occurrenceId],
+          );
+          setToast(included ? "Removed from the proposal" : "Added to the proposal");
+          return;
+        }
         const next = !isOnAgenda(occurrenceId);
         setOnAgenda((current) => ({ ...current, [occurrenceId]: next }));
         setToast(next ? "Added to Agenda" : "Removed from Agenda");
@@ -155,6 +206,80 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
         });
       },
       isSurfaced,
+      isDraftActive,
+      draftOccurrenceIds,
+      isInDraft,
+      isLocked,
+      savedOccurrenceIds,
+      goals,
+      setGoals,
+      appliedSummary,
+      proposeDraft: (occurrenceIds: string[]) => {
+        const next = mergeLocked(occurrenceIds, lockedIds());
+        setDraftIds(next);
+        return next;
+      },
+      toggleLock: (occurrenceId: string) => {
+        if (!findOccurrence(occurrenceId)) return;
+        if (isOnAgenda(occurrenceId)) {
+          setToast("Saved sessions stay protected.");
+          return;
+        }
+        const nextLocked = !isLocked(occurrenceId);
+        setLocked((current) => ({ ...current, [occurrenceId]: nextLocked }));
+        if (nextLocked && draftIds && !draftIds.includes(occurrenceId)) {
+          setDraftIds([...draftIds, occurrenceId]);
+        }
+      },
+      buildDraft: () => {
+        const next = mergeLocked(goals.length ? builtDraftIds(savedOccurrenceIds()) : savedOccurrenceIds(), lockedIds());
+        setDraftIds(next);
+        setAppliedSummary(null);
+        setToast("Proposed agenda is ready. Nothing is saved until you apply it.");
+      },
+      applyDraft: () => {
+        if (!draftIds) return;
+        const review = reviewDraft(draftIds, savedOccurrenceIds());
+        if (!review.canApply) {
+          setToast("Resolve the conflict in this draft before applying it.");
+          return;
+        }
+        setPriorAgenda(onAgenda);
+        setLastDraft(draftIds);
+        const draft = new Set(draftIds);
+        const protectedIds = new Set(lockedIds());
+        setOnAgenda((current) => {
+          const next = { ...current };
+          for (const id of Object.keys(next)) {
+            if (next[id] && !draft.has(id) && !protectedIds.has(id)) next[id] = false;
+          }
+          for (const id of draft) next[id] = true;
+          for (const id of protectedIds) next[id] = true;
+          return next;
+        });
+        setDraftIds(null);
+        setAppliedSummary(review.appliedText);
+        setToast("Agenda updated");
+      },
+      undoApply: () => {
+        if (!priorAgenda) return;
+        setOnAgenda((current) => {
+          const next = { ...current };
+          const applied = new Set(lastDraft ?? []);
+          for (const id of new Set([...Object.keys(priorAgenda), ...applied])) {
+            if (Boolean(priorAgenda[id]) !== applied.has(id)) next[id] = Boolean(priorAgenda[id]);
+          }
+          return next;
+        });
+        setPriorAgenda(null);
+        setDraftIds(null);
+        setAppliedSummary(null);
+        setToast("Undid the last applied changes. Other agenda sessions are unchanged.");
+      },
+      discardDraft: () => {
+        setDraftIds(null);
+        setToast("Kept your current agenda");
+      },
       overlapsFor,
       visibleEntries,
       sessionById: (sessionId: string) =>
@@ -173,6 +298,12 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
     onAgenda,
     saved,
     surfaced,
+    draftIds,
+    locked,
+    goals,
+    appliedSummary,
+    priorAgenda,
+    lastDraft,
   ]);
 
   return <AgendaContext.Provider value={value}>{children}</AgendaContext.Provider>;

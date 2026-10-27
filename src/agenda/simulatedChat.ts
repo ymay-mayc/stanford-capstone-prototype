@@ -8,9 +8,9 @@ import { findOccurrence } from "./sessions";
 export const SIMULATED_REPLY_DELAY_MS = 700;
 
 export const presetPrompts = [
-  { id: "ai", label: "Find sessions about AI and agents." },
-  { id: "ux", label: "Find sessions about UX design." },
-  { id: "leadership", label: "Find sessions about leadership." },
+  { id: "ai", label: "Build an agenda about AI and agents." },
+  { id: "ux", label: "Build an agenda about UX design." },
+  { id: "leadership", label: "Build an agenda about leadership." },
 ] as const;
 
 export type Suggestion = {
@@ -23,47 +23,35 @@ export type Suggestion = {
 export type SimulatedReply = {
   text: string;
   suggestions: Suggestion[];
+  /** Sessions the prepared reply would put on the agenda. Empty until the attendee confirms. */
+  proposal: string[];
 };
+
+const proposalReply =
+  "I assembled a proposed agenda. It is not saved yet. The change summary shows what would be added or removed. You can edit or lock sessions, or update your agenda now.";
 
 const scripts: Record<(typeof presetPrompts)[number]["id"], SimulatedReply> = {
   ai: {
-    text: "I found 2 sessions that match your request about AI and agents. They both check out with your current schedule where the time and distance will not be a conflict.",
-    suggestions: [
-      { occurrenceId: "o002", reason: "", addInChat: false },
-      { occurrenceId: "o083", reason: "", addInChat: false },
-    ],
+    text: proposalReply,
+    suggestions: [],
+    proposal: ["o122", "o002", "o083", "o080"],
   },
   ux: {
-    text: "One session in this agenda is specifically about design and building an interface. This preview has not checked walking time between rooms.",
-    suggestions: [
-      {
-        occurrenceId: "o005",
-        reason: "It walks through using agents to code a UI from Figma, which is the closest UX match here.",
-      },
-    ],
+    text: proposalReply,
+    suggestions: [],
+    proposal: ["o122", "o005", "o002"],
   },
   leadership: {
-    text: "These sessions from this agenda match a request about leadership. This preview has not checked walking time between rooms.",
-    suggestions: [
-      {
-        occurrenceId: "o098",
-        reason: "Reese Witherspoon talks about how leaders build lasting relevance.",
-      },
-      {
-        occurrenceId: "o100",
-        reason: "Sterling K. Brown talks about leading with empathy as technology changes the work.",
-      },
-      {
-        occurrenceId: "o075",
-        reason: "Marc Benioff and Sam Altman discuss how leaders put new AI tools to work.",
-      },
-    ],
+    text: proposalReply,
+    suggestions: [],
+    proposal: ["o122", "o098", "o100", "o075"],
   },
 };
 
 const fallback: SimulatedReply = {
-  text: "This preview only has prepared answers for the suggested requests above. Choose one to see sessions from this agenda.",
+  text: "This preview can prepare an agenda for the three requests above. Choose one to see a proposal.",
   suggestions: [],
+  proposal: [],
 };
 
 export function simulatedReply(request: string): SimulatedReply {
@@ -72,5 +60,6 @@ export function simulatedReply(request: string): SimulatedReply {
   return {
     text: reply.text,
     suggestions: reply.suggestions.filter((item) => findOccurrence(item.occurrenceId)),
+    proposal: reply.proposal.filter((id) => findOccurrence(id)),
   };
 }
