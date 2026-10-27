@@ -27,6 +27,12 @@
   margin-inline: auto;
 }
 
+/* DMS Day surface role: --color-surface-1. */
+.agenda-stage {
+  background: var(--color-surface-1);
+  padding-bottom: var(--space-content-3xl);
+}
+
 .nav__inner {
   display: flex;
   align-items: center;
@@ -241,6 +247,123 @@
   font-weight: var(--font-style-body-copy-2-weight);
   line-height: var(--font-style-body-copy-2-line-height);
   letter-spacing: var(--font-style-body-copy-2-letter-spacing);
+}
+
+.choose {
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: var(--space-content-md);
+  width: 100%;
+  margin-top: var(--space-content-lg);
+}
+
+.choose__panel {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-content-xs);
+  width: 100%;
+  padding: var(--space-content-lg);
+  background: var(--color-surface-1);
+  border: 1px solid var(--color-border-1);
+  border-radius: var(--radius-card);
+}
+
+.agenda__intro .choose__label {
+  margin: 0;
+  color: var(--color-on-surface-1);
+  font-family: var(--font-style-body-copy-2-family);
+  font-size: var(--font-style-body-copy-2-size);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--font-style-body-copy-2-line-height);
+  letter-spacing: var(--font-style-body-copy-2-letter-spacing);
+}
+
+.agenda__intro .choose p {
+  width: auto;
+  margin: 0;
+  color: var(--color-on-surface-2);
+  font-family: var(--font-style-body-copy-3-family);
+  font-size: var(--font-style-body-copy-3-size);
+  font-weight: var(--font-style-body-copy-3-weight);
+  line-height: var(--font-style-body-copy-3-line-height);
+  letter-spacing: var(--font-style-body-copy-3-letter-spacing);
+}
+
+.agenda__intro .choose .choose__title {
+  color: var(--color-on-surface-1);
+  font-weight: var(--font-weight-bold);
+}
+
+.agenda__intro .choose .choose__kicker {
+  color: var(--color-on-surface-1);
+  font-weight: var(--font-weight-bold);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.agenda__intro .choose .choose__meta {
+  color: var(--color-on-surface-3);
+}
+
+.choose__actions,
+.choose__goals,
+.choose__feedback {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-content-xs);
+  align-items: center;
+}
+
+.choose__feedback {
+  flex-direction: column;
+  align-items: flex-start;
+  width: 100%;
+}
+
+.choose__goal {
+  margin: 0;
+  padding: var(--space-interactive-2xs) var(--space-interactive-md);
+  border: 1px solid var(--color-border-1);
+  border-radius: var(--radius-chip);
+  background: var(--color-surface-1);
+  color: var(--color-on-surface-2);
+  font-family: var(--font-style-body-copy-4-family);
+  font-size: var(--font-style-body-copy-4-size);
+  font-weight: var(--font-style-body-copy-4-weight);
+  line-height: var(--font-style-body-copy-4-line-height);
+  letter-spacing: var(--font-style-body-copy-4-letter-spacing);
+  cursor: pointer;
+}
+
+.choose__goal--on {
+  background: var(--color-fill-accent);
+  border-color: var(--color-fill-accent);
+  color: var(--color-on-fill-accent);
+}
+
+.choose__goal:focus-visible {
+  outline: 3px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.choose__list {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-content-md);
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.choose__list li {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: var(--space-content-2xs);
+  width: 100%;
 }
 
 /* No Agentforce chat-input token exists. Panel uses the neutral chip surface. */
@@ -1824,4 +1947,29 @@
   .sf-footer__legal-links {
     justify-content: center;
   }
+}
+
+/* Presentation annotation outside the product UI.
+   DMS roles: on-surface-3, surface-1, border-1, Body Copy 4. */
+.prototype-annotation {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: var(--space-content-xs) var(--space-content-md);
+  padding: var(--space-content-sm) var(--space-content-lg);
+  background: var(--color-surface-1);
+  color: var(--color-on-surface-3);
+  border-bottom: 1px dashed var(--color-border-1);
+  font-family: var(--font-style-body-copy-4-family);
+  font-size: var(--font-style-body-copy-4-size);
+  line-height: var(--font-style-body-copy-4-line-height);
+  font-weight: var(--font-style-body-copy-4-weight);
+  text-align: center;
+}
+.prototype-annotation__label { font-style: italic; }
+.prototype-annotation__context {
+  font-size: var(--font-style-body-copy-5-size);
+  text-transform: uppercase;
+  letter-spacing: var(--font-style-body-copy-5-letter-spacing);
 }
