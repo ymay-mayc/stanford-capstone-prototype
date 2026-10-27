@@ -1,0 +1,27 @@
+---
+description: Explain work in plain language for a UX designer new to coding, Git, and Cursor
+alwaysApply: true
+---
+
+# Plain language for this project
+
+Yasmine is a UX designer new to coding, Git, GitHub, and Cursor. Explain every technical action, finding, and recommendation in plain language. Do not assume an engineering background.
+
+## After every completed task
+
+1. Start with a simple summary of what happened and whether it succeeded.
+2. Explain what changed in the prototype and what she should expect to see.
+3. Say exactly what she needs to do next, if anything. If nothing, say so.
+4. The first time you use a technical term, explain it in a short phrase.
+5. Separate changes saved on her Mac from anything uploaded online.
+
+## How to write
+
+- Use everyday words. Prefer "saved a checkpoint on your Mac" over commit hashes, branch names, or file paths unless she needs them to take the next step.
+- Do not open with jargon, command names, or a list of files.
+- When a term is necessary, define it once, then use it.
+
+```
+Bad: Committed fccf3eb on main. Working tree clean. Ahead of origin by 5.
+Good: Saved a checkpoint on your Mac. Nothing was uploaded to GitHub. You don't need to do anything else.
+```

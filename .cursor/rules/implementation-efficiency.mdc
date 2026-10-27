@@ -1,0 +1,42 @@
+---
+description: Scale effort to the request and keep prototype changes small
+alwaysApply: true
+---
+
+# Implementation efficiency
+
+Yasmine is building a high-fidelity UX prototype. Match the amount of investigation and checking to the size of the request.
+
+## Always
+
+- Change only the components and styles named in the request.
+- Leave previously approved components and interactions alone unless this task explicitly requires a change.
+- Use files and components already known from this project. Search again only when the location is unknown.
+- Use Figma as the visual source of truth. Reuse its tokens, components, and specs. Do not approximate or redesign something that already has a defined reference.
+- Do not repeat work already documented in `PROTOTYPE_HANDOFF.md`.
+- After the task, say briefly what changed and what to review.
+- Create a local Git checkpoint only when she explicitly asks. Do not upload to GitHub unless she asks.
+
+## Small visual changes
+
+Icons, colors, borders, spacing, and typography:
+
+- Find the relevant component and styles, then make the smallest change.
+- Reuse an existing Figma reference and design tokens.
+- Do not run repeated searches or extra exploration.
+- Run one focused check.
+- Do not do extensive browser testing or screenshot comparisons unless she asks, or the change could move layout or change an interaction.
+
+## Complex changes
+
+Calendar layout, component structure, how information is stored, and interactions:
+
+- Investigate more deeply and check the behavior that could break.
+- Keep working behavior and approved designs as they are.
+
+## Example
+
+```
+Bad: Restyle the page, compare many screenshots, and save a checkpoint while swapping one icon.
+Good: Swap that icon, do one focused check, and wait for her to ask for a checkpoint.
+```

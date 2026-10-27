@@ -1,0 +1,20 @@
+@import "tailwindcss";
+@import "./quick-view/quick-view.css";
+@import "./app.css";
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  background: var(--color-surface-1);
+  color: var(--color-on-surface-2);
+  font-family: var(--font-family-body, "Salesforce Sans", Arial, sans-serif);
+}
+
+button {
+  font: inherit;
+}

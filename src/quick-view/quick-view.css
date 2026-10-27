@@ -1,0 +1,485 @@
+.compare {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: var(--space-content-2xl, 48px) var(--space-content-lg, 24px)
+    var(--space-content-3xl, 64px);
+}
+
+.compare__intro {
+  margin: 0 0 var(--space-content-xl, 32px);
+}
+
+.compare__intro h1 {
+  margin: 0 0 var(--space-content-xs, 8px);
+  font-family: var(--font-family-display, "Avant Garde For Salesforce", Arial, sans-serif);
+  font-size: var(--font-style-display-6-size, 24px);
+  font-weight: var(--font-style-display-6-weight, 600);
+  line-height: var(--font-style-display-6-line-height, 1.25);
+  letter-spacing: var(--font-style-display-6-letter-spacing, -0.0015em);
+  color: var(--color-on-surface-1, #001e5b);
+}
+
+.compare__intro p,
+.compare__label {
+  margin: 0;
+  font-size: var(--font-style-body-copy-3-size, 16px);
+  line-height: var(--font-style-body-copy-3-line-height, 1.5);
+  color: var(--color-on-surface-3, #444444);
+}
+
+.compare__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-content-3xl, 64px);
+}
+
+.compare__item {
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-content-sm, 12px);
+}
+
+.compare__label {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-content-2xs, 4px);
+}
+
+.compare__label span {
+  font-weight: var(--font-weight-bold, 700);
+  color: var(--color-on-surface-1, #001e5b);
+}
+
+.qv {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-content-md, 16px);
+  margin: 0;
+  padding: 40px;
+  background: var(--color-surface-1, #ffffff);
+  color: var(--color-on-surface-2, #181818);
+  border-radius: var(--radius-modal, 16px);
+  box-shadow:
+    0 2px 4px rgba(24, 24, 24, 0.08),
+    0 8px 6px rgba(24, 24, 24, 0.16);
+}
+
+.qv__top,
+.qv__kicker,
+.qv__meta li,
+.qv__seating,
+.qv__actions,
+.qv__recommended {
+  display: flex;
+  align-items: center;
+}
+
+.qv__top {
+  justify-content: space-between;
+  gap: var(--space-content-md, 16px);
+}
+
+.qv__kicker {
+  gap: 8px;
+  min-width: 0;
+  flex-wrap: wrap;
+}
+
+.qv__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 20px;
+  min-width: 40px;
+  padding: 0 8px;
+  border-radius: var(--radius-2, 12px);
+  background: #032d60;
+  color: var(--color-on-fill-accent, #ffffff);
+  font-size: var(--font-style-body-copy-5-size, 12px);
+  font-weight: var(--font-style-body-copy-5-bold-weight, 700);
+  line-height: 18px;
+  letter-spacing: 0.03px;
+}
+
+.qv__recommended {
+  gap: 4px;
+  color: #032d60;
+  font-size: var(--font-style-body-copy-5-size, 12px);
+  font-weight: var(--font-weight-bold, 700);
+  line-height: 18px;
+  letter-spacing: 0.03px;
+}
+
+.qv__sparkle {
+  position: relative;
+  flex: none;
+  width: 16px;
+  height: 16px;
+  overflow: hidden;
+}
+
+.qv__sparkle img {
+  position: absolute;
+  top: -6.14%;
+  left: 0;
+  width: 100%;
+  max-width: none;
+  height: 112.28%;
+}
+
+.qv__icon-btn,
+.qv__fav {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 26px;
+  height: 26px;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  border-radius: var(--radius-button, 9999px);
+  background: transparent;
+  color: var(--color-on-surface-3, #444444);
+  cursor: pointer;
+}
+
+.qv__fav {
+  margin-left: auto;
+  color: var(--color-link, #022ac0);
+}
+
+.qv__fav--on,
+.qv__fav[aria-pressed="true"] {
+  color: var(--color-fill-accent);
+}
+
+.qv__icon-btn:focus-visible,
+.qv__fav:focus-visible {
+  outline: 3px solid var(--color-border-focus, #066afe);
+  outline-offset: 2px;
+}
+
+.qv__title {
+  margin: 0;
+  font-family: var(--font-family-display, "Avant Garde For Salesforce", Arial, sans-serif);
+  font-size: var(--font-style-display-6-size, 24px);
+  font-weight: var(--font-style-display-6-weight, 600);
+  line-height: 32px;
+  letter-spacing: -0.06px;
+  color: #032d60;
+}
+
+.qv__meta {
+  list-style: none;
+  margin: var(--space-content-md, 16px) 0 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-content-sm, 12px);
+}
+
+.qv__meta li {
+  gap: var(--space-content-sm, 12px);
+  margin: 0;
+  font-size: var(--font-style-body-copy-3-size, 16px);
+  line-height: var(--font-style-body-copy-3-line-height, 1.5);
+}
+
+.qv__when,
+.qv__place {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin: 0;
+  color: var(--color-on-surface-2, #181818);
+  font-size: var(--font-style-body-copy-2-size, 18px);
+  font-weight: var(--font-weight-regular, 400);
+  line-height: 28px;
+  letter-spacing: 0.02px;
+}
+
+.qv__select {
+  flex: 1;
+  min-width: 0;
+}
+
+.qv__select select {
+  width: 100%;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  cursor: pointer;
+}
+
+.qv__description,
+.qv__speaker,
+.qv__equipment {
+  margin: 0;
+  color: var(--color-on-surface-2, #181818);
+  font-size: var(--font-style-body-copy-3-size, 16px);
+  line-height: 24px;
+  letter-spacing: 0.02px;
+}
+
+.qv__speaker strong,
+.qv__equipment strong {
+  font-weight: var(--font-weight-bold, 700);
+}
+
+.qv__speaker strong {
+  display: block;
+}
+
+.qv__footer {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  width: 100%;
+}
+
+.qv__seating,
+.qv__note {
+  gap: 4px;
+  margin: 0;
+  font-size: var(--font-style-body-copy-5-size, 12px);
+  font-weight: var(--font-weight-regular, 400);
+  line-height: 18px;
+  letter-spacing: 0.03px;
+}
+
+.qv__seating {
+  display: flex;
+  align-items: center;
+  padding: 4px 8px 4px 0;
+  color: var(--color-link, #022ac0);
+}
+
+.qv__note {
+  display: flex;
+  align-items: flex-start;
+  margin: var(--space-content-md) 0 0;
+  color: var(--color-on-surface-2);
+}
+
+.qv__note--overlap {
+  color: var(--color-on-surface-warning);
+}
+
+.qv__actions {
+  justify-content: space-between;
+  gap: var(--space-content-md, 16px);
+  margin: 0;
+}
+
+.qv__cta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--space-content-lg, 24px);
+}
+
+.qv .icon {
+  width: 20px;
+  height: 20px;
+  flex: none;
+  color: currentColor;
+}
+
+.qv__icon-btn .icon {
+  width: 26px;
+  height: 26px;
+}
+
+.qv__when .icon,
+.qv__place .icon {
+  width: 24px;
+  height: 24px;
+  color: var(--color-on-surface-3, #444444);
+}
+
+.qv__seating .icon {
+  width: 14px;
+  height: 14px;
+  color: var(--color-link, #022ac0);
+}
+
+.qv .sf-cta .icon {
+  width: 16px;
+  height: 16px;
+}
+
+.qv .sf-cta--hero {
+  min-height: 44px;
+  font-size: 16px;
+  line-height: 24px;
+}
+
+.qv .sf-cta--primary {
+  height: 44px;
+  padding: 12px 32px;
+}
+
+.qv .sf-cta--secondary {
+  padding: 8px 24px;
+}
+
+.qv .heart,
+.qv .heart svg {
+  width: 26px;
+  height: 26px;
+}
+
+.qv__heart {
+  width: 24px;
+  height: 24px;
+}
+
+.sf-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  text-decoration: none;
+  border-radius: var(--radius-button, 9999px);
+  font-family: var(--font-family-body, "Salesforce Sans", Arial, sans-serif);
+  font-weight: var(--font-weight-bold, 700);
+  cursor: pointer;
+  outline: none;
+  transition:
+    background-color 150ms ease-out,
+    transform 150ms ease-out,
+    color 150ms ease-out,
+    border-color 150ms ease-out;
+  will-change: transform;
+  transform: translateZ(0);
+}
+
+.sf-cta:not([aria-disabled="true"]):not(:disabled):hover {
+  transform: translateY(-2px) scale(1.02);
+}
+
+.sf-cta:not([aria-disabled="true"]):not(:disabled):active {
+  transform: translateY(0) scale(0.98);
+}
+
+.sf-cta:focus-visible {
+  outline: 3px solid var(--color-border-focus, #066afe);
+  outline-offset: 2px;
+}
+
+.sf-cta--hero,
+.sf-cta--medium,
+.sf-cta--small {
+  gap: var(--space-interactive-xs);
+  font-size: var(--font-size-16);
+  line-height: var(--font-line-height-24);
+  letter-spacing: var(--font-letter-spacing-2);
+}
+
+.sf-cta--hero {
+  padding-inline: var(--space-interactive-xl);
+  padding-block: var(--space-interactive-sm);
+}
+
+.sf-cta--medium {
+  padding-inline: var(--space-interactive-lg);
+  padding-block: var(--space-interactive-xs);
+}
+
+.sf-cta--small {
+  padding-inline: var(--space-interactive-md);
+  padding-block: var(--space-interactive-2xs);
+  font-size: var(--font-style-body-copy-4-size);
+  line-height: var(--font-style-body-copy-4-line-height);
+}
+
+.sf-cta:disabled {
+  cursor: not-allowed;
+}
+
+.sf-cta-link {
+  display: inline-flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: var(--color-link);
+  font: inherit;
+  font-weight: var(--font-weight-bold);
+  text-decoration: underline;
+  text-underline-offset: 0.2em;
+  cursor: pointer;
+}
+
+.sf-cta-link:hover {
+  color: var(--color-link-hover);
+}
+
+.sf-cta-link:focus-visible {
+  outline: 3px solid var(--color-border-focus);
+  outline-offset: 2px;
+}
+
+.sf-cta--primary {
+  background: var(--color-fill-accent, #066afe);
+  color: var(--color-on-fill-accent, #ffffff);
+  border: none;
+}
+
+.sf-cta--primary:hover {
+  background: var(--color-fill-accent-hover, #022ac0);
+}
+
+.sf-cta--primary:active,
+.sf-cta--primary:focus-visible {
+  background: var(--color-fill-accent-active, #002775);
+}
+
+.sf-cta--secondary {
+  background: transparent;
+  color: var(--color-on-fill-neutral-accent, #022ac0);
+  border: none;
+  box-shadow: inset 0 0 0 2px var(--color-border-accent, #022ac0);
+}
+
+.sf-cta--secondary:hover,
+.sf-cta--secondary:focus-visible {
+  background: var(--color-fill-neutral-hover, #eaf5fe);
+  color: var(--color-on-fill-neutral-accent-hover, #002775);
+  box-shadow: inset 0 0 0 2px var(--color-border-accent-hover, #002775);
+}
+
+.sf-cta--added {
+  background: var(--color-fill-disabled-1);
+  color: var(--color-on-surface-2);
+  border: none;
+  box-shadow: none;
+}
+
+.sf-cta--added:hover,
+.sf-cta--added:focus-visible {
+  background: var(--color-fill-neutral-hover);
+  color: var(--color-on-surface-1);
+}
+
+.sf-cta--unavailable {
+  background: transparent;
+  color: var(--color-on-surface-disabled, #939393);
+  border: none;
+  box-shadow: inset 0 0 0 1px var(--color-border-disabled, #c9c9c9);
+  cursor: not-allowed;
+}
+
+.sf-cta--unavailable:hover,
+.sf-cta--unavailable:active {
+  transform: none;
+  background: transparent;
+}
