@@ -20,6 +20,11 @@ function Shell() {
 
   return (
     <>
+      <aside className="prototype-annotation" aria-label="Prototype presentation label">
+        <span className="prototype-annotation__context">Capstone prototype</span>
+        <span className="prototype-annotation__label">Variant C · Delegate within limits</span>
+        <span className="prototype-annotation__context">Simulated recommendations · no registration or calendar sync</span>
+      </aside>
       <EventNav />
       {view.name === "agenda" ? <AgendaPage /> : null}
       {view.name === "activities" ? <AllActivitiesPage /> : null}

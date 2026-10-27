@@ -49,7 +49,7 @@ const AgendaContext = createContext<AgendaContextValue | null>(null);
 
 function initialAgenda() {
   return Object.fromEntries(
-    entriesFor(sessions).map(({ occurrence }) => [occurrence.id, occurrence.initialOnAgenda]),
+    entriesFor(sessions).map(({ occurrence }) => [occurrence.id, occurrence.id === "o122" || occurrence.initialOnAgenda]),
   );
 }
 

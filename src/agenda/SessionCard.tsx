@@ -31,6 +31,7 @@ export function SessionCard({
       >
         <span className="card__header">
           <span className="card__type">{session.type}</span>
+          {onAgenda ? <span className="card__recommended">Added</span> : null}
           {suggestion ? (
             <span className="card__recommended">
               <span className="card__sparkle">
