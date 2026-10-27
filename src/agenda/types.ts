@@ -1,6 +1,13 @@
 export type DayId = "sun" | "mon" | "tue";
 
-export type SessionType = "Meeting" | "Breakout" | "Theater" | "Hands-on Training" | "Roundtable";
+export type SessionType =
+  | "Meeting"
+  | "Breakout"
+  | "Theater"
+  | "Hands-on Training"
+  | "Roundtable"
+  | "Keynote"
+  | "Main Keynote";
 
 export type Occurrence = {
   id: string;
@@ -20,6 +27,8 @@ export type Session = {
   location: string;
   speaker: string;
   description: string;
+  seating?: string;
+  context?: string;
   equipment?: string;
   track: string;
   recommended: boolean;

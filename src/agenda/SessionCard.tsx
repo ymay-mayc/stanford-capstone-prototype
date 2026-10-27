@@ -1,7 +1,6 @@
 import { formatCardWhen } from "./sessions";
 import type { Occurrence, Session } from "./types";
 import { useAgenda } from "./AgendaContext";
-import { HeartButton } from "./HeartButton";
 import sparkle from "./recommended-sparkle.png";
 
 export function SessionCard({
@@ -13,11 +12,11 @@ export function SessionCard({
   occurrence?: Occurrence;
   variant?: "calendar" | "row";
 }) {
-  const { isOnAgenda, isSaved, toggleAgenda, toggleSaved, openQuickView } = useAgenda();
+  const { isOnAgenda, isSurfaced, toggleAgenda, openQuickView } = useAgenda();
   const time = occurrence ?? session.occurrences[0];
   const onAgenda = isOnAgenda(time.id);
-  const saved = isSaved(session.id);
-  const suggestion = session.recommended && !onAgenda;
+  const suggestion = (session.recommended || isSurfaced(time.id)) && !onAgenda;
+  const venue = session.location.split(",")[0]?.trim() ?? session.location;
 
   return (
     <article
@@ -42,7 +41,7 @@ export function SessionCard({
           ) : null}
         </span>
         <span className="card__title">{session.title}</span>
-        <span className="card__meta">{formatCardWhen(time, session.location)}</span>
+        <span className="card__meta">{formatCardWhen(time, venue)}</span>
       </button>
       <div className="card__tools">
         {!onAgenda && !session.forced ? (
@@ -55,11 +54,6 @@ export function SessionCard({
             {session.addLabel}
           </button>
         ) : null}
-        <HeartButton
-          pressed={saved}
-          label={saved ? `Remove ${session.title} from favorites` : `Save ${session.title}`}
-          onClick={() => toggleSaved(session.id)}
-        />
       </div>
     </article>
   );

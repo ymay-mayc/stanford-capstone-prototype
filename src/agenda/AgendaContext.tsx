@@ -38,6 +38,8 @@ type AgendaContextValue = {
   toggleSaved: (sessionId: string) => void;
   dismissToast: () => void;
   notify: (message: string) => void;
+  surfaceSessions: (occurrenceIds: string[]) => void;
+  isSurfaced: (occurrenceId: string) => boolean;
   overlapsFor: (occurrenceId: string) => AgendaEntry[];
   visibleEntries: () => AgendaEntry[];
   sessionById: (sessionId: string) => Session;
@@ -67,6 +69,7 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
   const [toast, setToast] = useState<string | null>(null);
   const [onAgenda, setOnAgenda] = useState<Record<string, boolean>>(initialAgenda);
   const [saved, setSaved] = useState<Record<string, boolean>>(initialSaved);
+  const [surfaced, setSurfaced] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (!toast) return;
@@ -77,6 +80,7 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
   const value = useMemo<AgendaContextValue>(() => {
     const isOnAgenda = (occurrenceId: string) => onAgenda[occurrenceId] ?? false;
     const isSaved = (sessionId: string) => saved[sessionId] ?? false;
+    const isSurfaced = (occurrenceId: string) => surfaced[occurrenceId] ?? false;
 
     const overlapsFor = (occurrenceId: string) => {
       const found = findOccurrence(occurrenceId);
@@ -92,6 +96,7 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
         if (isOnAgenda(occurrence.id)) return true;
         if (showFavorites && isSaved(session.id)) return true;
         if (showRecommended && session.recommended) return true;
+        if (isSurfaced(occurrence.id)) return true;
         return false;
       });
 
@@ -142,6 +147,14 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
       },
       dismissToast: () => setToast(null),
       notify: (message: string) => setToast(message),
+      surfaceSessions: (occurrenceIds: string[]) => {
+        setSurfaced((current) => {
+          const next = { ...current };
+          for (const id of occurrenceIds) next[id] = true;
+          return next;
+        });
+      },
+      isSurfaced,
       overlapsFor,
       visibleEntries,
       sessionById: (sessionId: string) =>
@@ -159,6 +172,7 @@ export function AgendaProvider({ children }: { children: ReactNode }) {
     toast,
     onAgenda,
     saved,
+    surfaced,
   ]);
 
   return <AgendaContext.Provider value={value}>{children}</AgendaContext.Provider>;

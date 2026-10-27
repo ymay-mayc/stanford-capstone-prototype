@@ -1,269 +1,221 @@
-import { useEffect, useId, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { useAgenda } from "./AgendaContext";
 import { SessionCard } from "./SessionCard";
 import {
+  presetPrompts,
+  SIMULATED_REPLY_DELAY_MS,
+  simulatedReply,
+  type Suggestion,
+} from "./simulatedChat";
+import {
   dayEnd,
-  dayStart,
   days,
+  findOccurrence,
   formatClock,
+  formatWhen,
   rangesOverlap,
   slotHeight,
   slotMinutes,
 } from "./sessions";
-import type { AgendaEntry, DayId, SessionType } from "./types";
+import type { AgendaEntry, DayId } from "./types";
 
-const sessionTypes: SessionType[] = ["Meeting", "Breakout", "Theater", "Hands-on Training", "Roundtable"];
-
-const experiences = [
-  {
-    title: "Ask the Experts",
-    body: "Book a 1-to-1 appointment with a Salesforce expert to resolve product roadblocks, deepen knowledge, and learn new features.",
-  },
-  {
-    title: "Connect with Salesblazers in the Sales Lodge",
-    body: "Visit the Sales Lodge to join interactive roundtables, get hands-on in workshops, and connect with fellow members of the Salesblazer Community.",
-  },
-  {
-    title: "See Sales Cloud in Action at the Campground",
-    body: "Campground is the perfect place to see Sales Cloud product innovations — with live product demos from Spiff, Revenue Cloud, partner relationship management, and more.",
-  },
-];
+type ChatMessage =
+  | { id: string; role: "user"; text: string }
+  | { id: string; role: "assistant"; text: string; suggestions: Suggestion[] };
 
 export function AgendaPage() {
   const agenda = useAgenda();
-  const {
-    sessions,
-    layout,
-    setLayout,
-    showRecommended,
-    setShowRecommended,
-    showFavorites,
-    setShowFavorites,
-    forYouOpen,
-    setForYouOpen,
-  } = agenda;
-  const [viewOpen, setViewOpen] = useState(false);
-  const [filtersOpen, setFiltersOpen] = useState(false);
-  const [hiddenTypes, setHiddenTypes] = useState<SessionType[]>([]);
-  const [consultationAdded, setConsultationAdded] = useState(false);
-  const toolbarRef = useRef<HTMLDivElement>(null);
-  const recommendedId = useId();
-  const favoritesId = useId();
+  const { layout } = agenda;
+  const [ask, setAsk] = useState("");
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [pending, setPending] = useState(false);
+  const [showJump, setShowJump] = useState(false);
+  const [liveMessage, setLiveMessage] = useState("");
+  const askId = useId();
+  const threadRef = useRef<HTMLDivElement>(null);
+  const pinnedRef = useRef(true);
+  const replyTimer = useRef<number | null>(null);
+  const messageCount = useRef(0);
+
+  const visible = agenda.visibleEntries();
 
   useEffect(() => {
-    function onPointer(event: MouseEvent) {
-      if (!toolbarRef.current?.contains(event.target as Node)) {
-        setViewOpen(false);
-        setFiltersOpen(false);
-        setForYouOpen(false);
-      }
-    }
-    function onKey(event: KeyboardEvent) {
-      if (event.key === "Escape") {
-        setViewOpen(false);
-        setFiltersOpen(false);
-        setForYouOpen(false);
-      }
-    }
-    document.addEventListener("mousedown", onPointer);
-    document.addEventListener("keydown", onKey);
     return () => {
-      document.removeEventListener("mousedown", onPointer);
-      document.removeEventListener("keydown", onKey);
+      if (replyTimer.current !== null) window.clearTimeout(replyTimer.current);
     };
-  }, [setForYouOpen]);
+  }, []);
 
-  const recommended = sessions.filter((session) => session.recommended);
-  const visible = agenda
-    .visibleEntries()
-    .filter((entry) => !hiddenTypes.includes(entry.session.type));
+  function updatePinned() {
+    const thread = threadRef.current;
+    if (!thread) return;
+    const distance = thread.scrollHeight - thread.scrollTop - thread.clientHeight;
+    const pinned = distance < 48;
+    pinnedRef.current = pinned;
+    setShowJump(!pinned);
+  }
 
-  function toggleType(type: SessionType) {
-    setHiddenTypes((current) =>
-      current.includes(type) ? current.filter((item) => item !== type) : [...current, type],
-    );
+  function scrollToLatest() {
+    const thread = threadRef.current;
+    if (!thread) return;
+    thread.scrollTop = thread.scrollHeight;
+    pinnedRef.current = true;
+    setShowJump(false);
+  }
+
+  function startExchange(request: string) {
+    const text = request.trim();
+    if (!text || pending) return;
+    messageCount.current += 1;
+    const userId = `user-${messageCount.current}`;
+    setMessages((current) => [...current, { id: userId, role: "user", text }]);
+    setPending(true);
+    setLiveMessage("Finding sessions.");
+    pinnedRef.current = true;
+    window.setTimeout(scrollToLatest, 0);
+
+    replyTimer.current = window.setTimeout(() => {
+      const reply = simulatedReply(text);
+      messageCount.current += 1;
+      setMessages((current) => [
+        ...current,
+        { id: `assistant-${messageCount.current}`, role: "assistant", ...reply },
+      ]);
+      setPending(false);
+      agenda.surfaceSessions(
+        reply.suggestions.filter((item) => item.addInChat === false).map((item) => item.occurrenceId),
+      );
+      const titles = reply.suggestions
+        .map((item) => findOccurrence(item.occurrenceId)?.session.title)
+        .filter(Boolean);
+      setLiveMessage(titles.length ? `${reply.text} ${titles.join(". ")}.` : reply.text);
+      window.setTimeout(() => {
+        if (pinnedRef.current) scrollToLatest();
+        else setShowJump(true);
+      }, 0);
+    }, SIMULATED_REPLY_DELAY_MS);
+  }
+
+  function sendDraft(event: FormEvent) {
+    event.preventDefault();
+    const text = ask.trim();
+    if (!text || pending) return;
+    setAsk("");
+    startExchange(text);
   }
 
   return (
     <>
       <main className="agenda">
         <header className="agenda__intro">
-          <h1>Dreamforce Agenda 2026</h1>
-          <p>
-            See the sessions you’ve added alongside personalized, AI-powered recommendations based
-            on your interests and favorites. Recommendations appear right in your schedule, so you
-            can quickly add sessions that interest you or hide them anytime. Scroll past your agenda
-            to manage your experiences, review your scheduled meetings, or sync your calendar.
-          </p>
+          <h1>Build Your Dreamforce Agenda</h1>
+          <div className="agenda-prompt">
+            <div className="sr-only" aria-live="polite" aria-atomic="true">
+              {liveMessage}
+            </div>
+            <div
+              className="agenda-prompt__thread"
+              ref={threadRef}
+              aria-busy={pending}
+              onScroll={updatePinned}
+            >
+              <p>
+                We&apos;ve started your agenda with a few sessions we think you&apos;ll enjoy. Want to
+                make it more personal? Tell us what you&apos;re interested in, and we&apos;ll find more
+                sessions for you.
+              </p>
+              <div className="agenda-prompt__topics" role="group" aria-label="Suggested requests">
+                {presetPrompts.map((prompt) => (
+                  <button
+                    key={prompt.id}
+                    type="button"
+                    className="agenda-prompt__topic"
+                    disabled={pending}
+                    onClick={() => startExchange(prompt.label)}
+                  >
+                    {prompt.label}
+                  </button>
+                ))}
+              </div>
+              {messages.map((message) =>
+                message.role === "user" ? (
+                  <p key={message.id} className="agenda-prompt__user">
+                    {message.text}
+                  </p>
+                ) : (
+                  <div key={message.id} className="agenda-prompt__reply">
+                    <p>{message.text}</p>
+                    {message.suggestions.length > 0 ? (
+                      <ul className="agenda-prompt__suggestions">
+                        {message.suggestions.map((item) => {
+                          const found = findOccurrence(item.occurrenceId);
+                          if (!found) return null;
+                          const onAgenda = agenda.isOnAgenda(item.occurrenceId);
+                          const action = onAgenda ? "Remove" : "Add";
+                          const relation = onAgenda ? "from" : "to";
+                          return (
+                            <li key={item.occurrenceId}>
+                              <p className="agenda-prompt__session">{found.session.title}</p>
+                              <p className="agenda-prompt__when">{formatWhen(found.session)}</p>
+                              {item.reason ? <p>{item.reason}</p> : null}
+                              {item.addInChat === false ? null : (
+                                <button
+                                  type="button"
+                                  className="agenda-prompt__action"
+                                  aria-label={`${action} ${found.session.title} ${relation} your agenda`}
+                                  onClick={() => agenda.toggleAgenda(item.occurrenceId)}
+                                >
+                                  {onAgenda ? "Remove from agenda" : "Add to agenda"}
+                                </button>
+                              )}
+                            </li>
+                          );
+                        })}
+                      </ul>
+                    ) : null}
+                  </div>
+                ),
+              )}
+              {pending ? <p className="agenda-prompt__pending">Finding sessions…</p> : null}
+            </div>
+            {showJump ? (
+              <button type="button" className="agenda-prompt__jump" onClick={scrollToLatest}>
+                Jump to latest
+              </button>
+            ) : null}
+            <p className="agenda-prompt__note">
+              <i className="icon icon--info" aria-hidden="true" />
+              Recommendations appear in your agenda below. Review sessions before adding them.
+            </p>
+            <form className="agenda-prompt__ask" onSubmit={sendDraft}>
+              <label className="sr-only" htmlFor={askId}>
+                Ask for sessions, change your schedule, or tell us what interests you
+              </label>
+              <div className="agenda-prompt__control">
+                <span className="agenda-prompt__caret" aria-hidden="true" />
+                <input
+                  id={askId}
+                  className="agenda-prompt__input"
+                  value={ask}
+                  placeholder="Ask for sessions, change your schedule, or tell us what interests you..."
+                  onChange={(event) => setAsk(event.target.value)}
+                />
+                <button type="button" className="agenda-prompt__mic" aria-label="Use your voice">
+                  <i className="icon icon--unmuted" aria-hidden="true" />
+                </button>
+                <button type="submit" className="agenda-prompt__send" aria-label="Send" disabled={pending}>
+                  <i className="icon icon--arrowup" aria-hidden="true" />
+                </button>
+              </div>
+            </form>
+          </div>
         </header>
-
-        <div className="console" ref={toolbarRef}>
-          <div className="console__filters">
-            <label className="check" htmlFor={recommendedId}>
-              <span className="check__control">
-                <input
-                  id={recommendedId}
-                  type="checkbox"
-                  checked={showRecommended}
-                  onChange={(event) => setShowRecommended(event.target.checked)}
-                />
-                <i className="icon icon--check check__glyph" aria-hidden="true" />
-              </span>
-              Show Recommended
-            </label>
-            <label className="check" htmlFor={favoritesId}>
-              <span className="check__control">
-                <input
-                  id={favoritesId}
-                  type="checkbox"
-                  checked={showFavorites}
-                  onChange={(event) => setShowFavorites(event.target.checked)}
-                />
-                <i className="icon icon--check check__glyph" aria-hidden="true" />
-              </span>
-              Show Favorites
-            </label>
-          </div>
-          <div className="console__actions">
-            <div className="menu">
-              <button
-                type="button"
-                className="sf-cta sf-cta--medium sf-cta--secondary"
-                aria-haspopup="listbox"
-                aria-expanded={viewOpen}
-                aria-label="Select calendar view"
-                onClick={() => {
-                  setViewOpen((open) => !open);
-                  setFiltersOpen(false);
-                  setForYouOpen(false);
-                }}
-              >
-                {layout === "calendar" ? "Multi-day view" : "List view"}
-                <i className="icon icon--chevrondown" aria-hidden="true" />
-              </button>
-              {viewOpen ? (
-                <div className="menu__panel" role="listbox" aria-label="Calendar view">
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={layout === "calendar"}
-                    className="menu__item"
-                    onClick={() => {
-                      setLayout("calendar");
-                      setViewOpen(false);
-                    }}
-                  >
-                    Multi-day view
-                  </button>
-                  <button
-                    type="button"
-                    role="option"
-                    aria-selected={layout === "list"}
-                    className="menu__item"
-                    onClick={() => {
-                      setLayout("list");
-                      setViewOpen(false);
-                    }}
-                  >
-                    List view
-                  </button>
-                </div>
-              ) : null}
-            </div>
-
-            <div className="menu">
-              <button
-                type="button"
-                className="sf-cta sf-cta--medium sf-cta--primary"
-                aria-expanded={forYouOpen}
-                aria-label="For You menu"
-                onClick={() => {
-                  setForYouOpen(!forYouOpen);
-                  setViewOpen(false);
-                  setFiltersOpen(false);
-                }}
-              >
-                For You
-                <i className="icon icon--chevrondown" aria-hidden="true" />
-              </button>
-              {forYouOpen ? (
-                <div className="menu__panel menu__panel--wide" role="menu" aria-label="For you">
-                  {recommended.map((session) => {
-                    const onAgenda = agenda.isOnAgenda(session.id);
-                    return (
-                      <div key={session.id} className="menu__row" role="none">
-                        <button
-                          type="button"
-                          role="menuitem"
-                          className="menu__item menu__item--grow"
-                          onClick={() => agenda.openQuickView(session.id)}
-                        >
-                          <span>{session.title}</span>
-                          <span>
-                            {days.find((day) => day.id === session.day)?.weekday} · {formatClock(session.start)}
-                          </span>
-                        </button>
-                        {onAgenda ? (
-                          <span className="for-you__state">On agenda</span>
-                        ) : (
-                          <button
-                            type="button"
-                            className="card__add"
-                            onClick={() => agenda.toggleAgenda(session.id)}
-                          >
-                            <i className="icon icon--add" aria-hidden="true" />
-                            {session.addLabel}
-                          </button>
-                        )}
-                      </div>
-                    );
-                  })}
-                </div>
-              ) : null}
-            </div>
-
-            <div className="menu">
-              <button
-                type="button"
-                className="toolbar-btn toolbar-btn--icon"
-                aria-expanded={filtersOpen}
-                aria-label="Filters"
-                onClick={() => {
-                  setFiltersOpen((open) => !open);
-                  setViewOpen(false);
-                  setForYouOpen(false);
-                }}
-              >
-                <i className="icon icon--slider" aria-hidden="true" />
-              </button>
-              {filtersOpen ? (
-                <div className="menu__panel menu__panel--end" role="group" aria-label="Session types">
-                  {sessionTypes.map((type) => (
-                    <label key={type} className="check menu__check">
-                      <input
-                        type="checkbox"
-                        checked={!hiddenTypes.includes(type)}
-                        onChange={() => toggleType(type)}
-                      />
-                      {type}
-                    </label>
-                  ))}
-                </div>
-              ) : null}
-            </div>
-          </div>
-        </div>
 
         {visible.length === 0 ? (
           <p className="empty">Nothing matches these filters. Turn filters back on to see more of the agenda.</p>
         ) : layout === "calendar" ? (
           <Calendar
             entries={visible}
-            onAdd={() => {
-              setForYouOpen(true);
-              setViewOpen(false);
-              setFiltersOpen(false);
-            }}
+            onAdd={() => undefined}
             onOverflow={(count) => {
               const noun = count === 1 ? "session" : "sessions";
               agenda.notify(
@@ -275,61 +227,6 @@ export function AgendaPage() {
           <AgendaList entries={visible} />
         )}
       </main>
-
-      <section className="band" aria-labelledby="experiences-title">
-        <div className="band__inner">
-          <header className="band__intro">
-            <h2 id="experiences-title">Your Favorites, ready when you are.</h2>
-            <p>
-              Join these anytime experiences whenever it works for you, between sessions or a part of
-              your adventure throughout campus.
-            </p>
-          </header>
-          <h3 className="band__label">Experiences</h3>
-          <ul className="experience-grid">
-            {experiences.map((item) => (
-              <li key={item.title}>
-                <article className="experience">
-                  <h4>{item.title}</h4>
-                  <p>{item.body}</p>
-                </article>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </section>
-
-      <section className="band" aria-labelledby="meetings-title">
-        <div className="band__inner">
-          <header className="band__intro">
-            <h2 id="meetings-title">Manage your meetings</h2>
-            <p>
-              View or edit your scheduled meetings. Or unlock even more possibilities by meeting with
-              our partners.
-            </p>
-          </header>
-          <article className="meetings">
-            <div className="meetings__header">
-              <h3>Meetings</h3>
-              <button
-                type="button"
-                className="sf-cta sf-cta--medium sf-cta--primary"
-                onClick={() => setConsultationAdded(true)}
-              >
-                Add Consultation
-              </button>
-            </div>
-            {consultationAdded ? (
-              <p className="meetings__row">Consultation request · Waiting for a time</p>
-            ) : (
-              <div className="meetings__empty">
-                <p>No Consultations Scheduled</p>
-                <p>Start planning consultations to enhance your event experience.</p>
-              </div>
-            )}
-          </article>
-        </div>
-      </section>
     </>
   );
 }
@@ -343,20 +240,13 @@ function Calendar({
   onAdd: (day: DayId, minute: number) => void;
   onOverflow: (count: number) => void;
 }) {
-  const calendarRef = useRef<HTMLElement>(null);
+  const visibleStart = 9 * 60;
   const slots: number[] = [];
-  for (let minute = dayStart; minute < dayEnd; minute += slotMinutes) slots.push(minute);
+  for (let minute = visibleStart; minute < dayEnd; minute += slotMinutes) slots.push(minute);
   const height = slots.length * slotHeight;
 
-  useEffect(() => {
-    const calendar = calendarRef.current;
-    if (!calendar) return;
-    const rowsBeforeNine = (9 * 60 - dayStart) / slotMinutes;
-    calendar.scrollTop = rowsBeforeNine * slotHeight;
-  }, []);
-
   return (
-    <section ref={calendarRef} className="calendar" aria-label="Event schedule">
+    <section className="calendar" aria-label="Event schedule">
       <div className="calendar__head">
         <div className="calendar__time-head" />
         {days.map((day) => (
@@ -414,7 +304,7 @@ function Calendar({
                   0,
                   group.findIndex((item) => item.occurrence.id === entry.occurrence.id),
                 );
-                const top = ((entry.occurrence.start - dayStart) / slotMinutes) * slotHeight + 4;
+                const top = ((entry.occurrence.start - visibleStart) / slotMinutes) * slotHeight + 4;
                 const blockHeight =
                   ((entry.occurrence.end - entry.occurrence.start) / slotMinutes) * slotHeight - 8;
                 const overflow = entry.session.overflowCount;

@@ -1,6 +1,5 @@
 import { useEffect, useId, useRef } from "react";
 import { createPortal } from "react-dom";
-import { HeartButton } from "../agenda/HeartButton";
 import { useAgenda } from "../agenda/AgendaContext";
 import { findOccurrence, formatWhen } from "../agenda/sessions";
 import sparkle from "../agenda/recommended-sparkle.png";
@@ -12,9 +11,7 @@ export function QuickViewModal() {
     closeQuickView,
     sessionById,
     isOnAgenda,
-    isSaved,
     toggleAgenda,
-    toggleSaved,
     openDetail,
     setQuickViewOccurrence,
   } = useAgenda();
@@ -41,7 +38,6 @@ export function QuickViewModal() {
   const session = sessionById(quickViewId);
   const selected = findOccurrence(quickViewOccurrenceId)?.occurrence ?? session.occurrences[0];
   const onAgenda = isOnAgenda(selected.id);
-  const saved = isSaved(session.id);
   const showRecommended = session.recommended && !onAgenda;
   const reserved = session.addLabel.toLowerCase().includes("reserve");
 
@@ -116,6 +112,12 @@ export function QuickViewModal() {
             {session.speaker}
           </p>
         ) : null}
+        {session.seating ? (
+          <p className="qv__speaker">
+            <strong>Seating</strong>
+            {session.seating}
+          </p>
+        ) : null}
         {session.equipment ? (
           <p className="qv__equipment">
             <strong>Required Equipment: </strong>
@@ -165,11 +167,6 @@ export function QuickViewModal() {
               See more details
             </button>
           </div>
-          <HeartButton
-            pressed={saved}
-            label={saved ? `Remove ${session.title} from favorites` : `Save ${session.title}`}
-            onClick={() => toggleSaved(session.id)}
-          />
           </div>
         </div>
       </article>
